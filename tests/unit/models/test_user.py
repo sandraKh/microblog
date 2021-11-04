@@ -3,8 +3,11 @@ Contains tests for app.models.User class
 """
 # pylint: disable=redefined-outer-name,unused-argument
 # from unittest import mock
+from datetime import datetime, timedelta
+from unittest import mock
 import pytest
-from app.models import User
+from app.models import User, Post
+from app import db
 
 @pytest.fixture
 def user1():
@@ -42,15 +45,6 @@ def test_avatar(test_app, user1):
     assert user1.avatar(128) == ('https://www.gravatar.com/avatar/'
                                  'd4c74594d841139328695756648b6bd6'
                                  '?d=retro&s=128')
-
-# pylint: disable=redefined-outer-name
-from datetime import datetime, timedelta
-from unittest import mock
-import pytest
-from app.models import User, Post
-from app import db
-
-...
 
 def test_follow(test_app): # pylint: disable=unused-argument
     """

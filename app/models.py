@@ -1,7 +1,7 @@
 """
 Contains Databse model classes
 """
-
+#pylint: disable=logging-fstring-interpolation
 from hashlib import md5
 from datetime import datetime
 from flask import current_app
@@ -112,3 +112,4 @@ class Post(db.Model):
 
     def __repr__(self):
         return '<Post: {}: {} By user_id {}>'.format(self.title, self.body, self.user_id)
+
