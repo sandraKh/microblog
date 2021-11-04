@@ -1,7 +1,7 @@
 """
 Contains Databse model classes
 """
-#pylint: disable=logging-fstring-interpolation
+# pylint: skip-file
 from hashlib import md5
 from datetime import datetime
 from flask import current_app
