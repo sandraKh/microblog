@@ -39,9 +39,20 @@ def index():
         flash('Your post is now live!')
         return redirect(url_for('main.index'))
 
-    posts = current_user.posts.all()
+    posts = current_user.followed_posts().all()
     return render_template("index.html", title='Home Page', form=form,
                            posts=posts)
+
+
+@bp.route('/user/<username>')
+@login_required
+def user(username):
+    """
+    Route for user
+    """
+    user_ = User.query.filter_by(username=username).first_or_404()
+    posts = user_.posts.all()
+    return render_template('user.html', user=user_, posts=posts)
 
 
 
@@ -53,19 +64,6 @@ def explore():
     """
     posts = Post.query.order_by(Post.timestamp.desc()).all()
     return render_template('index.html', title='Explore', posts=posts)
-
-
-
-@bp.route('/user/<username>')
-@login_required
-def user(username):
-    """
-    Route for user
-    """
-    user_ = User.query.filter_by(username=username).first_or_404()
-    posts = current_user.posts.all()
-    return render_template('user.html', user=user_, posts=posts)
-
 
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
@@ -86,3 +84,39 @@ def edit_profile():
         form.about_me.data = current_user.about_me
     return render_template('edit_profile.html', title='Edit Profile',
                            form=form)
+
+@bp.route('/follow/<username>')
+@login_required
+def follow(username):
+    """
+    Follow a User
+    """
+    user_ = User.query.filter_by(username=username).first()
+    if user_ is None:
+        flash(f'User {username} not found.')
+        return redirect(url_for('index'))
+    if user_ == current_user:
+        flash('You cannot follow yourself!')
+        return redirect(url_for('user', username=username))
+    current_user.follow(user_)
+    db.session.commit()
+    flash(f'You are following {username}!')
+    return redirect(url_for('main.user', username=username))
+
+@bp.route('/unfollow/<username>')
+@login_required
+def unfollow(username):
+    """
+    Unfollow a User
+    """
+    user_ = User.query.filter_by(username=username).first()
+    if user is None:
+        flash(f'User {username} not found.')
+        return redirect(url_for('index'))
+    if user_ == current_user:
+        flash('You cannot unfollow yourself!')
+        return redirect(url_for('user', username=username))
+    current_user.unfollow(user_)
+    db.session.commit()
+    flash(f'You are not following {username}.')
+    return redirect(url_for('main.user', username=username))
