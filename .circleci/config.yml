@@ -50,8 +50,8 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             IMAGE_TAG=${CIRCLE_TAG/v/''}
-            docker tag $IMAGE_NAME:latest $IMAGE_NAME:$IMAGE_TAG
-            docker push $IMAGE_NAME:latest
+            docker tag $IMAGE_NAME:new $IMAGE_NAME:$IMAGE_TAG
+            docker push $IMAGE_NAME:new
             docker push $IMAGE_NAME:$IMAGE_TAG
 workflows:
   version: 2
