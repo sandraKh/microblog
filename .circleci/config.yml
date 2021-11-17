@@ -55,28 +55,28 @@ jobs:
             docker push $IMAGE_NAME:$IMAGE_TAG
 
   deploy-latest:
-      executor: docker-publisher
-      steps:
-        - checkout
-        - run:
-          name: Install venv
-          command: |
-              sudo apt-get install python3-venv
-              python3 -m venv .venv
-        - run: echo "source ~/project/.venv/bin/activate" >> $BASH_ENV 
-        - run:
-          name: Install dependencies and deploy appServer
-          command: |
-              python3 -m venv venv
-              . venv/bin/activate
-              make install
-              pip3 install --upgrade setuptools
-              pip3 install --upgrade pip
-              pip3 install wheel
-              make install-deploy
-              pip3 install ansible[azure]
-              cd ansible
-              ansible-playbook gather_vm_instances.yml appServer.yml
+    executor: docker-publisher
+    steps:
+      - checkout
+      - run:
+         name: Install venv
+         command: |
+             sudo apt-get install python3-venv
+             python3 -m venv .venv
+      - run: echo "source ~/project/.venv/bin/activate" >> $BASH_ENV 
+      - run:
+         name: Install dependencies and deploy appServer
+         command: |
+            python3 -m venv venv
+             . venv/bin/activate
+             make install
+             pip3 install --upgrade setuptools
+             pip3 install --upgrade pip
+             pip3 install wheel
+             make install-deploy
+             pip3 install ansible[azure]
+             cd ansible
+             ansible-playbook gather_vm_instances.yml appServer.yml
 
 workflows:
   version: 2
