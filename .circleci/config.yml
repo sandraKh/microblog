@@ -69,6 +69,7 @@ jobs:
           command: |
             sudo apt-get install python3-venv
             python3 -m venv venv
+            pip install packaging
             make install-deploy
       - run:
           name: Deploy appServer
