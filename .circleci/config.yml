@@ -54,7 +54,7 @@ jobs:
             docker push $IMAGE_NAME:new
             docker push $IMAGE_NAME:$IMAGE_TAG
 
-  deploy-latest:
+deploy-latest:
     executor: docker-publisher
     steps:
       - checkout
@@ -65,33 +65,18 @@ jobs:
              python3 -m venv .venv
       - run: echo "source ~/project/.venv/bin/activate" >> $BASH_ENV 
       - run:
-         name: Install dependencies
+         name: Install dependencies and deploy appServer
          command: |
+            python3 -m venv venv
+             . venv/bin/activate
+             make install
              pip3 install --upgrade setuptools
              pip3 install --upgrade pip
              pip3 install wheel
              make install-deploy
              pip3 install ansible[azure]
-      - run:
-          name: Deploy appServer
-          command: |
-              cd ansible
-              ansible-playbook gather_vm_instances.yml appServer.yml
-
-snyk:
-  docker:
-      - image: circleci/python:3.8
-  working_directory: ~/repo
-  steps:
-      - checkout
-      - run:
-          name: install dependencies
-          command: |
-              python3 -m venv venv
-              . venv/bin/activate
-              make install
-      - run: echo "source ~/repo/venv/bin/activate" >> $BASH_ENV
-      - snyk/scan
+             cd ansible
+             ansible-playbook gather_vm_instances.yml appServer.yml
 
 workflows:
   version: 2
@@ -129,3 +114,103 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
+
+version: 2.1
+executors:
+  docker-publisher:
+    environment:
+      IMAGE_NAME: sandrakullar/microblog
+    docker:
+      - image: circleci/python:3.8
+jobs:
+  test:
+    executor: docker-publisher
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Run tests with docker
+          command: |
+            sudo apt-get install python3-venv
+            python3 -m venv venv
+            . venv/bin/activate
+            make install-test
+            make validate
+            make exec-tests
+  build:
+    executor: docker-publisher
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          command: docker build -t $IMAGE_NAME:latest -f docker/Dockerfile_prod .
+      - run:
+          name: Archive Docker image
+          command: docker save -o image.tar $IMAGE_NAME
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./image.tar
+
+  publish-latest:
+    executor: docker-publisher
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run:
+          name: Load archived Docker image
+          command: docker load -i /tmp/workspace/image.tar
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKER_HUB_PASS" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+            docker push antonvlinux/microblog:latest
+  deploy-latest:
+    executor: docker-publisher
+    steps:
+      - checkout
+      - run:
+         name: Install venv
+         command: |
+             sudo apt-get install python3-venv
+             python3 -m venv .venv
+      - run: echo "source ~/project/.venv/bin/activate" >> $BASH_ENV 
+      - run:
+         name: Install dependencies
+         command: |
+             pip install wheel
+             make install-deploy
+             pip install ansible[azure]
+      - run:
+          name: Deploy appServer
+          command: |
+              cd ansible
+              ansible-playbook gather_vm_instances.yml appServer.yml
+workflows:
+  version: 2
+  build-master:
+    jobs:
+      - test:
+            filters:
+              branches:
+                only: master
+      - build:
+              requires:
+                - test
+              filters:
+                branches:
+                  only: master
+      - publish-latest:
+              requires:
+                - build
+              filters:
+                branches:
+                  only: master
+      - deploy-latest:
+         requires:
+           - publish-latest
+         filters:
+           branches:
+             only: master
