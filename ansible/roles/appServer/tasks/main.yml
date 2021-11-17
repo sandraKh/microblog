@@ -1,0 +1,9 @@
+- name: microblog appserver
+  docker_container:
+    name: "microblog"
+    image: sandrakullar/microblog:new
+    ports: 
+      - 8000:5000
+    restart_policy: always
+    env:
+      DATABASE_URL: "mysql+pymysql://microblog:password@{{ groups['database'][0] }}/microblog"

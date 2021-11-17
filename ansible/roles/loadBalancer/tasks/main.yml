@@ -1,0 +1,54 @@
+---
+-   name: Install nginx up to date
+    apt: name=nginx state=latest
+
+-   name: Install certbot
+    apt: name=python-certbot-apache state=latest
+
+-   name: Check if cert is already there
+    stat:
+        path: /etc/letsencrypt/live/sandrakullar.me/cert.pem
+    register: letsencrypt_cert
+
+-   name: Stop nginx
+    service: 
+        name: nginx 
+        state: stopped
+
+-   name: Get new cert if it is not already there.
+    shell: "certbot certonly --standalone --noninteractive --expand --agree-tos --email sandra.kullar@gmail.com -d sandrakullar.me -d www.sandrakullar.me"
+    when: not letsencrypt_cert.stat.exists
+
+-   name: remove default config file.
+    file:
+        state: absent
+        path: /etc/nginx/sites-enabled/default
+
+-   name: Copy nginx.conf template 
+    template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        owner: "{{ server_user }}"
+        group: "{{ server_user }}"
+        mode: '0644'
+
+-   name: Copy load-balancer template file to sites-available
+    template:
+        src: templates/load-balancer.conf.j2
+        dest: /etc/nginx/sites-available/load-balancer.conf
+        owner: "{{ server_user }}"
+        group: "{{ server_user }}"
+        mode: '0644'
+
+-   name: Create a symlink from sites-available to sites-enabled config files
+    file:
+        src: /etc/nginx/sites-available/load-balancer.conf
+        dest: /etc/nginx/sites-enabled/load-balancer.conf
+        state: link
+        owner: "{{ server_user }}"
+        group: "{{ server_user }}"
+
+-   name: restart nginx
+    service: 
+        name: nginx 
+        state: started

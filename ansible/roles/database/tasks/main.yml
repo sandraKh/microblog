@@ -1,0 +1,14 @@
+---
+- name: Starting mysql container
+  docker_container:
+    name: "{{ docker_name }}"
+    image: "{{ docker_image_name }}"
+    published_ports: 3306:3306
+    volumes:
+      - "/var/lib/mysql:/var/lib/mysql"
+    restart: True
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ mysql_root_pass }}"
+      MYSQL_DATABASE: "{{ mysql_database_name }}"
+      MYSQL_USER: "{{ mysql_user }}"
+      MYSQL_PASSWORD: "{{ mysql_pass }}"

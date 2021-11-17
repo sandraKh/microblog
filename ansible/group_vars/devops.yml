@@ -1,0 +1,13 @@
+---
+root_password: $6$fLPtFPXJc4LdjRP6$uzO9lIiLGRfmEOOc7RQzcOB/a3D9QVYWwTLJWFohYIxGZGoscUnU4FSyndEkwHjWVdm8Y0JDR.LOMYSYEO5jY0
+
+
+server_user: deploy
+server_user_pass: $6$cRYh26dxiAcay9gU$YKyVyDKzEweJkGwSFOtZv3R67srhuTisD6NHTCj/vJuygekEP0HKCi433QiY206pomQ0dPz4EDgbmJfHpmap5/
+server_user_groups:
+  - sudo
+
+pub_ssh_key_location:
+  - ~/.ssh/azureci.pub
+
+domain_name: sandrakullar.me

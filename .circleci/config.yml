@@ -53,6 +53,28 @@ jobs:
             docker tag $IMAGE_NAME:new $IMAGE_NAME:$IMAGE_TAG
             docker push $IMAGE_NAME:new
             docker push $IMAGE_NAME:$IMAGE_TAG
+
+  deploy-latest:
+  executor: docker-publisher
+  steps:
+    - checkout
+    - run:
+        name: Install venv
+        command: |
+            sudo apt-get install python3-venv
+            python3 -m venv .venv
+    - run: echo "source ~/project/.venv/bin/activate" >> $BASH_ENV 
+    - run:
+        name: Install dependencies
+        command: |
+            pip install wheel
+            make install-deploy
+            pip install ansible[azure]
+    - run:
+        name: Deploy appServer
+        command: |
+            cd ansible
+            ansible-playbook gather_vm_instances.yml appServer.yml
 workflows:
   version: 2
   build-master:
@@ -83,3 +105,9 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
+      - deploy-latest:
+         requires:
+           - publish-latest
+         filters:
+           branches:
+             only: master

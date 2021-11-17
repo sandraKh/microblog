@@ -1,0 +1,49 @@
+---
+
+- name: Install Docker dependencies
+  apt:
+    force_apt_get: true
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg2
+      - software-properties-common
+      - python-backports.ssl-match-hostname
+
+- name: Add Docker GPG key
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+
+- name: Add Docker repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/debian stretch stable
+    state: present
+
+- name: Install Docker and pip
+  apt:
+    force_apt_get: true
+    name:
+      - docker-ce
+      - python-pip
+      - python3-pip
+
+- name: Install docker for python
+  pip:
+    name:
+      - docker
+
+# - name: Remove "foo" package
+#   apt:
+#     name: docker-py
+#     state: absent
+
+# - name: Remove "foo" package
+#   apt:
+#     name: docker
+#     state: absent
+
+# - name: Remove "foo" package
+#   apt:
+#     name: docker-compose
+#     state: absent
