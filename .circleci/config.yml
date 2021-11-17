@@ -4,7 +4,7 @@ executors:
     environment:
       IMAGE_NAME: sandrakullar/microblog
     docker:
-      - image: circleci/buildpack-deps:stretch
+      - image: circleci/python:3.8
 jobs:
   build:
     executor: docker-publisher
@@ -69,7 +69,6 @@ jobs:
           command: |
             sudo apt-get install python3-venv
             python3 -m venv venv
-            . venv/bin/activate
             make install-deploy
       - run:
           name: Deploy appServer
