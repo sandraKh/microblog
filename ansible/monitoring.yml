@@ -1,13 +1,13 @@
 ---
--   hosts: database
-    remote_user: deploy
+-   hosts:
+    -   monitoring
+    remote_user: azureuser
     become: yes
     become_method: sudo
     vars:
       ansible_python_interpreter: /usr/bin/python3
     roles:
-        # - docker
-        - prometheus
+        - docker
         - node_exporter
+        - prometheus
         - monitoring
-        # - database

@@ -12,3 +12,29 @@
       MYSQL_DATABASE: "{{ mysql_database_name }}"
       MYSQL_USER: "{{ mysql_user }}"
       MYSQL_PASSWORD: "{{ mysql_pass }}"
+
+- name: Copy setup.sql
+  copy:
+    src: setup/setup.sql
+    dest: /home/{{ server_user }}/
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
+    mode: "644"
+
+- name: Add exporter user
+  shell: docker exec -i microblog_mysql mysql -uroot -p{{ mysql_root_pass }} < /home/{{ server_user }}/setup.sql
+
+- name: Start mysql-exporter container
+  become: yes
+  become_method: sudo
+  command: docker run -d \
+      -p 9104:9104 \
+      --network host \
+      -e DATA_SOURCE_NAME="exporter:password@(localhost:3306)/" \
+      --restart always \
+      prom/mysqld-exporter:latest \
+      --collect.auto_increment.columns \
+      --collect.binlog_size \
+      --collect.engine_innodb_status \
+      --collect.engine_tokudb_status \
+      --collect.global_status \

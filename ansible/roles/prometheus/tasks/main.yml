@@ -1,0 +1,19 @@
+---
+-   name: Download promethes
+    unarchive:
+        src: "https://github.com/prometheus/prometheus/releases/download/v2.31.1/prometheus-2.31.1.linux-amd64.tar.gz"
+        dest: .
+        remote_src: yes
+
+-   name: Copy prometheus.yml config file
+    template:
+        src: templates/prometheus_template.j2
+        dest: prometheus-2.31.1.linux-amd64/prometheus.yml
+        owner: azureuser
+        group: azureuser
+        mode: '755'
+
+-   name: Start prometheus service
+    shell: nohup sudo ./prometheus &
+    args:
+        chdir: prometheus-2.31.1.linux-amd64/

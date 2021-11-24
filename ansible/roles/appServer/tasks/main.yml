@@ -1,7 +1,7 @@
 - name: microblog appserver
   docker_container:
     name: "microblog"
-    image: sandrakullar/microblog:new
+    image: sandrakullar/microblog:flask-exporter
     ports: 
       - 8000:5000
     restart_policy: always

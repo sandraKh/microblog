@@ -1,0 +1,278 @@
+# ---
+# - name: Create prometheus user
+#   user:
+#     name: "prometheus_user"
+#     system: yes
+#     create_home: no
+#     state: present
+
+# - name: Download and unarchive prometheus
+#   unarchive:
+#     src: "https://github.com/prometheus/prometheus/releases/download/v2.22.2/prometheus-2.22.2.linux-amd64.tar.gz"
+#     dest: /home/azureuser
+#     remote_src: yes
+
+# - name: Copy prometheus to bin folder
+#   copy:
+#     src: /home/azureuser/prometheus-2.22.2.linux-amd64/prometheus
+#     dest: /usr/local/bin/
+#     owner: "prometheus_user"
+#     group: "prometheus_user"
+#     mode: '0755'
+#     remote_src: yes
+
+# - name: Copy promtool to bin folder
+#   copy:
+#     src: /home/azureuser/prometheus-2.22.2.linux-amd64/promtool
+#     dest: /usr/local/bin/
+#     owner: "prometheus_user"
+#     group: "prometheus_user"
+#     mode: '0755'
+#     remote_src: yes
+
+# - name: Create /etc/prometheus directory
+#   file:
+#     path: /etc/prometheus
+#     state: directory
+#     owner: "prometheus_user"
+#     group: "prometheus_user"
+#     mode: '0755'
+
+# - name: Create /var/lib/prometheus directory
+#   file:
+#     path: /var/lib/prometheus
+#     state: directory
+#     owner: "prometheus_user"
+#     group: "prometheus_user"
+#     mode: '0755'
+
+# - name: Copy prometheus/consoles to directory
+#   copy:
+#     src: /home/azureuser/prometheus-2.22.2.linux-amd64/consoles
+#     dest: /etc/prometheus
+#     owner: "prometheus_user"
+#     group: "prometheus_user"
+#     mode: '755'
+#     remote_src: yes
+
+# - name: Copy prometheus/console_libraries to directory
+#   copy:
+#     src: /home/azureuser/prometheus-2.22.2.linux-amd64/console_libraries
+#     dest: /etc/prometheus
+#     owner: "prometheus_user"
+#     group: "prometheus_user"
+#     mode: '0755'
+#     remote_src: yes
+
+# - name: Remove tmp dir
+#   file:
+#     path: /home/azureuser/prometheus-2.22.2.linux-amd64/
+#     state: absent
+
+# - name: Modify the prometheus.yml config file
+#   template:
+#     src: ./templates/prometheus_template.j2
+#     dest: /etc/prometheus/prometheus.yml
+#     owner: "prometheus_user"
+#     group: "prometheus_user"
+#     mode: '0644'
+
+# - name: Create and setup prometheus service
+#   template:
+#     src: ./templates/prometheus.j2
+#     dest: /etc/systemd/system/prometheus.service
+#     owner: "prometheus_user"
+#     group: "prometheus_user"
+#     mode: '0644'
+
+# - name: Reload systemctl 
+#   systemd:
+#     daemon_reload: yes
+
+# - name: Start and enable prometheus
+#   systemd:
+#     state: started
+#     name: prometheus
+#     enabled: yes
+
+# - name: Download grafana to server
+#   get_url:
+#     url: "https://dl.grafana.com/oss/release/grafana_7.3.3_amd64.deb"
+#     dest: /home/azureuser
+#     mode: '440'
+
+# - name: Install adduser libfontconfig1 packages
+#   apt:
+#     force_apt_get: yes
+#     pkg:
+#       - adduser
+#       - libfontconfig1
+
+
+# -   name: Fix broken install
+#     command: sudo apt --fix-broken install -y
+
+# - name: start grafana service
+#   command: sudo dpkg -i /home/azureuser/grafana_7.3.3_amd64.deb
+
+# - name: Copy grafana.ini file
+#   template:
+#     src: templates/grafana.ini.j2
+#     dest: /etc/grafana/grafana.ini
+
+# - name: Remove grafana deb file
+#   file:
+#     path: /home/azureuser/grafana_7.3.3_amd64.deb
+#     state: absent
+
+# - name: Reload daemon 
+#   systemd:
+#     daemon_reload: yes
+
+# - name: Start and enable grafana-server
+#   systemd:
+#     state: started
+#     name: grafana-server
+#     enabled: yes 
+
+# -   name: creating networks
+#     docker_network:
+#         name: monitor
+
+# -   name: creating volumes
+#     docker_volume:
+#         name: prometheus-data
+#         driver_options: 
+#           type: dict
+#           device: prometheus
+
+# -   name: creating volumes
+#     docker_volume:
+#         name: grafana-data2
+#         driver_options: 
+#           type: dict
+#           device: /var/lib/grafana
+
+# -   name: Creating node-exporter container
+#     docker_container:
+#       name: "node-exporter"
+#       image: prom/node-exporter:v1.2.2
+#       published_ports: 9101:9101
+#       volumes:
+#         - /proc:/host/proc:ro
+#         - /sys:/host/sys:ro
+#         - /:/rootfs:ro
+#       restart: True
+#       command:
+#         - '--path.procfs=/host/proc'
+#         - '--path.rootfs=/rootfs'
+#         - '--path.sysfs=/host/sys'
+#         - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+#       networks:
+#         - name: monitor
+
+
+# - name: Creating prometheus container
+#   docker_container:
+#     name: "prometheus"
+#     image: prom/prometheus:v2.31.1
+#     published_ports: 9090:9090
+#     volumes:
+#       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#       - prometheus-data:/prometheus
+#     restart: True
+#     command:
+#       - "--config.file=/etc/prometheus/prometheus.yml"
+#       - "--storage.tsdb.path=/prometheus"
+#       - "--web.console.libraries=/etc/prometheus/console_libraries"
+#       - "--web.console.templates=/etc/prometheus/consoles"
+#       - "--storage.tsdb.retention.time=24h"
+#       - "--web.enable-lifecycle"
+#     networks:
+#       - name: monitor
+
+# -   name: Creating grafana container
+#     docker_container:
+#       name: "grafana"
+#       image: grafana/grafana:8.2.4
+#       published_ports: 3000:3000
+#       volumes:
+#         - grafana-data2:/var/lib/grafana
+#       restart: True
+#       networks:
+#         - name: monitor
+
+---
+
+
+
+# - name: Download grafana
+#   get_url:
+#     url: "https://dl.grafana.com/oss/release/grafana_8.2.4_amd64.deb"
+#     dest: /home/{{ server_user }}
+
+# # - name: Install adduser libfontconfig1 packages
+# #   apt:
+# #     force_apt_get: yes
+# #     pkg:
+# #       - adduser
+# #       - libfontconfig1
+
+# - name: Install grafana
+#   command: dpkg -i /home/{{ server_user }}/grafana_8.2.4_amd64.deb
+
+# - name: Copy grafana.ini
+#   template:
+#     src: templates/grafana.ini.j2
+#     dest: /etc/grafana/grafana.ini
+#     # mode: "go-w"
+
+# - name: Remove grafana deb file
+#   file:
+#     path: /home/{{ server_user }}/grafana_8.2.4_amd64.deb
+#     state: absent
+
+# - name: Reload daemon 
+#   systemd:
+#     daemon_reload: yes
+
+# - name: Start up grafana-server
+#   systemd:
+#     state: started
+#     name: grafana-server
+#     enabled: yes 
+    
+-   name: Template nginx config to server
+    template:
+        src: grafana.ini.j2
+        dest: /tmp/grafana.ini
+        force: yes
+
+-   name: Pull from dockerhub grafana/grafana:8.2.4
+    command: docker pull grafana/grafana:8.2.4
+
+-   name: Container for grafana/grafana:8.2.4
+    docker_container:
+        name: "grafana"
+        image: "grafana/grafana:8.2.4"
+        restart_policy: "always"
+        volumes:
+            - "/tmp/grafana.ini:/etc/grafana/grafana.ini"
+            - "/tmp/dashboards:/var/lib/grafana/dashboards"
+        network_mode: host
+        env:
+            GF_SECURITY_ADMIN_PASSWORD: admin
+        # recreate: yes
+
+# -   name: Container for grafana/grafana:8.2.4
+#     command: docker pull prom/mysqld-exporter
+
+# -   name: run docker 
+#     command: docker run -d \
+#                 --restart always \
+#                 -p 9113:9113 \
+#                 nginx/nginx-prometheus-exporter:0.4.2 \
+#                 -nginx.scrape-uri=https://sandrakullar/metrics \
+#                 -nginx.retries=10 \
+#                 -nginx.ssl-verify=false \
+#                 -web.telemetry-path=/prometheus

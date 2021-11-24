@@ -1,5 +1,10 @@
 ---
--   hosts: devops
+-   hosts: 
+    -   devops
+    -   database
+    -   appServer
+    -   loadBalancer
+    -   monitoring
     remote_user: azureuser
     become: yes
     become_method: sudo
