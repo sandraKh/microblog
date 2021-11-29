@@ -65,8 +65,12 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Running tests
-          command: docker build -t $IMAGE_NAME:new -f ./docker/Dockerfile_test .
+          name: Running bandit
+          command: |
+            sudo apt-get install python3-venv
+            python3 -m venv venv
+            . venv/bin/activate
+            make bandit
   deploy-latest:
     executor: docker-publisher
     steps:
