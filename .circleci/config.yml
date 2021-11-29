@@ -36,6 +36,7 @@ jobs:
       - snyk/scan:
           docker-image-name: $IMAGE_NAME
           additional-arguments: "--policy-path=.snyk"
+          fail-on-issues: false
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
