@@ -66,7 +66,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Running tests
-          command: docker-build -t $IMAGE_NAME:new -f ./docker/Dockerfile_test .
+          command: docker build -t $IMAGE_NAME:new -f ./docker/Dockerfile_test .
   deploy-latest:
     executor: docker-publisher
     steps:
