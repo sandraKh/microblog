@@ -1,4 +1,6 @@
 version: 2.1
+orbs: 
+    snyk: snyk/snyk@0.0.8
 executors:
   docker-publisher:
     environment:
@@ -77,6 +79,20 @@ jobs:
              pip3 install ansible[azure]
              cd ansible
              ansible-playbook gather_vm_instances.yml appServer.yml
+  snyk:
+    docker:
+        - image: circleci/python:3.5
+    working_directory: ~/repo
+    steps:
+        - checkout
+        - run:
+            name: install dependencies
+            command: |
+                python3 -m venv venv
+                . venv/bin/activate
+                make install
+        - run: echo "source ~/repo/venv/bin/activate" >> $BASH_ENV # här gör vi så att så att CircleCi automatisk laddar venv och då kollar Snyk vad vi har installerat i den.
+        - snyk/scan
 
 workflows:
   version: 2
@@ -98,6 +114,10 @@ workflows:
          filters:
            branches:
              only: master
+      - snyk:
+          filters:
+            branches:
+              only: master
   build-tags:
     jobs:
       - build:
