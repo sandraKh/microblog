@@ -59,7 +59,14 @@ jobs:
             docker tag $IMAGE_NAME:new $IMAGE_NAME:$IMAGE_TAG
             docker push $IMAGE_NAME:new
             docker push $IMAGE_NAME:$IMAGE_TAG
-
+  test:
+    executor: docker-publisher
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Running tests
+          command: docker-build -t $IMAGE_NAME:new -f ./docker/Dockerfile_test .
   deploy-latest:
     executor: docker-publisher
     steps:
@@ -96,9 +103,7 @@ jobs:
                 . venv/bin/activate
                 make install
         - run: echo "source ~/repo/venv/bin/activate" >> $BASH_ENV # här gör vi så att så att CircleCi automatisk laddar venv och då kollar Snyk vad vi har installerat i den.
-        - snyk/scan:
-            fail-on-issues: false
-
+        - snyk/scan
 workflows:
   version: 2
   build-master:
@@ -123,6 +128,10 @@ workflows:
           filters:
             branches:
               only: master
+      - test:
+        filters:
+          branches:
+            only: master
   build-tags:
     jobs:
       - build:
