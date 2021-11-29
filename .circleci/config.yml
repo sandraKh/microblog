@@ -71,8 +71,6 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             make install-test
-            make validate
-            make exec-tests
             make bandit
   deploy-latest:
     executor: docker-publisher
