@@ -59,22 +59,21 @@ jobs:
             docker tag $IMAGE_NAME:new $IMAGE_NAME:$IMAGE_TAG
             docker push $IMAGE_NAME:new
             docker push $IMAGE_NAME:$IMAGE_TAG
-  jobs:
-    test:
-      executor: docker-publisher
-      steps:
-        - checkout
-        - setup_remote_docker
-        - run:
-            name: Run tests with docker
-            command: |
-              sudo apt-get install python3-venv
-              python3 -m venv venv
-              . venv/bin/activate
-              make install-test
-              make validate
-              make exec-tests
-              make bandit
+  test:
+    executor: docker-publisher
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Run tests with docker
+          command: |
+            sudo apt-get install python3-venv
+            python3 -m venv venv
+            . venv/bin/activate
+            make install-test
+            make validate
+            make exec-tests
+            make bandit
   deploy-latest:
     executor: docker-publisher
     steps:
