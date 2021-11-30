@@ -4,7 +4,7 @@ region: northeurope
 resource_group: DIDA-SAKU16-DV1617-H21-LP2 # Change me
 domain_name: sandrakullar.me # Change me
 
-root_user: azureuser
+root_user: deploy
 
 vmtags:
     StudentId: "saku16" # Change me

@@ -226,3 +226,8 @@ test-docker:
 .PHONY: bandit
 bandit: 
 	bandit -r app
+
+# target: zap			              - Run zap
+.PHONY: zap
+zap: 
+	docker run owasp/zap2docker-weekly zap-baseline.py -t https://www.sandrakullar.me

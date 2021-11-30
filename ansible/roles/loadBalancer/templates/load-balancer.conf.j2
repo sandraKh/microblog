@@ -20,13 +20,17 @@ http {
        #}
     }
     server {
-       listen 443 ssl;
-       server_name  {{ domain_name }} www.{{ domain_name }};
-       add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
-        
-       ssl_certificate /etc/letsencrypt/live/{{ domain_name }}/cert.pem;
-       ssl_certificate_key /etc/letsencrypt/live/{{ domain_name }}/privkey.pem;
-       ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+        listen 443 ssl;
+        server_name  sandrakullar.me www.sandrakullar.me;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
+        add_header Content-Security-Policy "default-src 'self';" always;
+        add_header X-Frame-Options SAMEORIGIN always;
+        add_header "Cache-Control" "max-age=0, no-cache, no-store, must-revalidate";
+        add_header X-Content-Type-Options nosniff;
+        proxy_cookie_path / "/; secure; HttpOnly; SameSite=strict";
+        ssl_certificate /etc/letsencrypt/live/sandrakullar.me/cert.pem;
+        ssl_certificate_key /etc/letsencrypt/live/sandrakullar.me/privkey.pem;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
 
         location / {
           proxy_pass http://app-hosts;

@@ -65,7 +65,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Run tests with docker
+          name: Run bandit tests
           command: |
             sudo apt-get install python3-venv
             python3 -m venv venv
