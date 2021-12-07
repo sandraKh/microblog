@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microblog
+spec:
+  selector:
+    matchLabels:
+      app: microblog
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: microblog
+    spec:
+      containers:
+      - image: sandrakullar/microblog:flask-exporter
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 250m
+          limits:
+            cpu: 500m
+        name: microblog
+        ports: 
+        - containerPort: 5000
+        env:
+          - name: SECRET_KEY
+            value: password
+          - name: DATABASE_URL
+            value: mysql+pymysql://microblog:password@mysql:3306/microblog
+          - name: FLASK_APP
+            value: microblog.py
+          - name: FLASK_ENV
+            value: production
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+
+
+

@@ -1,0 +1,14 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: microblog-hpa 
+spec:
+  maxReplicas: 5 
+  minReplicas: 1 
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: microblog
+  targetCPUUtilizationPercentage: 20 
+
+  #.eJwljktuAzEIhu_idRdgjG1ymREYUKJKrTSTrKrevY66_J_6fsqRZ1z3cnuer_gox8PLrQAx8FRx4JyiXU1rTXVqywbgJCRrFhKWTCFEVo1FUbI36u9Ot2iwZMrgwdAx8x2ru0FXMd2ne58MAXPhXMq1gWJi9JGjbJDXFec_DW65rjOP5_dnfG1DOyFODG9mTmuF9xoyhpqkN6iBdQiwlt8_Eh4__A.Ya9VWQ.idjJM4ng84GALfqH0ilWLLHkm6A
